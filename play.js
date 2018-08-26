@@ -1,3 +1,4 @@
+var mousedownID = -1; //Global ID of mouse down interval
 const canvas = document.getElementById("canvas");
 const [CANVAS_HEIGHT, CANVAS_WIDTH] = [400, 600];
 canvas.height = CANVAS_HEIGHT;
@@ -31,27 +32,57 @@ ball.onload = function() {
   init();
   renderBall(0, 0);
 
-  window.onkeydown = window.onkeyup = e => {
-    if (e.code === "Space") {
-      switch (e.type) {
-        case "keydown":
-          if (e.repeat) {
-            ballForce++;
-            renderTrajectory(ballForce);
-          }
-          break;
-
-        case "keyup":
-          renderShoot(ballForce * 2);
-          ballForce = 0;
-          break;
-
-        default:
-          break;
-      }
-    }
-  };
+  window.onkeydown = window.onkeyup = handleInput;
 };
+
+function mousedown(event) {
+  if (mousedownID == -1)
+    //Prevent multimple loops!
+    mousedownID = setInterval(whilemousedown, 100 /*execute every 100ms*/);
+}
+function mouseup(event) {
+  if (mousedownID != -1) {
+    //Only stop if exists
+    clearInterval(mousedownID);
+    mousedownID = -1;
+    handleInput({
+      code: "Space",
+      type: "keyup"
+    });
+  }
+}
+function whilemousedown() {
+  handleInput({
+    code: "Space",
+    type: "keydown",
+    repeat: true
+  });
+}
+//Assign events
+canvas.addEventListener("mousedown", mousedown);
+canvas.addEventListener("mouseup", mouseup);
+canvas.addEventListener("mouseout", mouseup);
+
+function handleInput(e) {
+  if (e.code === "Space") {
+    switch (e.type) {
+      case "keydown":
+        if (e.repeat) {
+          ballForce++;
+          renderTrajectory(ballForce);
+        }
+        break;
+
+      case "keyup":
+        renderShoot(ballForce * 2);
+        ballForce = 0;
+        break;
+
+      default:
+        break;
+    }
+  }
+}
 
 function renderShoot(f = 0, x = 0) {
   if (x > 66) {
