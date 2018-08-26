@@ -38,7 +38,7 @@ ball.onload = function() {
 function mousedown(event) {
   if (mousedownID == -1)
     //Prevent multimple loops!
-    mousedownID = setInterval(whilemousedown, 100 /*execute every 100ms*/);
+    mousedownID = setInterval(whilemousedown, 20 /*execute every 100ms*/);
 }
 function mouseup(event) {
   if (mousedownID != -1) {
