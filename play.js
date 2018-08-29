@@ -17,7 +17,7 @@ function preload() {
   game.load.baseUrl = "arry.xyz/bball-demo/";
   game.load.crossOrigin = "anonymous";
   game.load.image("ball", "ball.png");
-  game.load.image("zone", "sprites/platform.png");
+  game.load.image("zone", "platform.png");
 }
 
 var card;
