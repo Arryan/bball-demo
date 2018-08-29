@@ -1,159 +1,146 @@
-var mousedownID = -1; //Global ID of mouse down interval
-const canvas = document.getElementById("canvas");
-const [CANVAS_HEIGHT, CANVAS_WIDTH] = [400, 600];
-canvas.height = CANVAS_HEIGHT;
-canvas.width = CANVAS_WIDTH;
-
-const BALL_RADIUS = 50;
-
-const ctx = canvas.getContext("2d");
-
-const ball = new Image();
-ball.src = "ball.png";
-const hoop = new Image();
-hoop.src = "hoop.png";
-
-// helpers
-const dFromBottom = dist => CANVAS_HEIGHT - dist;
-const dFromRight = dist => CANVAS_WIDTH - dist;
-const setIntervalX = (callback, delay, repetitions) => {
-  var x = 0;
-  var intervalID = window.setInterval(function() {
-    callback();
-
-    if (++x === repetitions) {
-      window.clearInterval(intervalID);
-    }
-  }, delay);
-};
-
-var ballForce = 0;
-ball.onload = function() {
-  init();
-  renderBall(0, 0);
-
-  window.onkeydown = window.onkeyup = handleInput;
-};
-
-function mousedown(event) {
-  if (mousedownID == -1)
-    //Prevent multimple loops!
-    mousedownID = setInterval(whilemousedown, 20 /*execute every 100ms*/);
-}
-function mouseup(event) {
-  if (mousedownID != -1) {
-    //Only stop if exists
-    clearInterval(mousedownID);
-    mousedownID = -1;
-    handleInput({
-      code: "Space",
-      type: "keyup"
-    });
-  }
-}
-function whilemousedown() {
-  handleInput({
-    code: "Space",
-    type: "keydown",
-    repeat: true
-  });
-}
-//Assign events
-canvas.addEventListener("mousedown", mousedown);
-canvas.addEventListener("mouseup", mouseup);
-canvas.addEventListener("mouseout", mouseup);
-
-function handleInput(e) {
-  if (e.code === "Space") {
-    switch (e.type) {
-      case "keydown":
-        if (e.repeat) {
-          ballForce++;
-          renderTrajectory(ballForce);
-        }
-        break;
-
-      case "keyup":
-        renderShoot(ballForce * 2);
-        ballForce = 0;
-        break;
-
-      default:
-        break;
-    }
-  }
-}
-
-function renderShoot(f = 0, x = 0) {
-  if (x > 66) {
-    if (f > 70 && f < 90) alert("ball went in");
-    return;
-  }
-
-  setTimeout(() => {
-    init();
-    let [a, h, k] = [0.2, 25, -125];
-    renderBall((f / 8) * x, a * (x - h) ** 2 + k);
-    renderShoot(f, ++x);
-  }, 20);
-}
-
 /**
- * Erase previous ball and draw one at new position
- * @param {*} x
- * @param {*} y
+ * Generated from the Phaser Sandbox
+ *
+ * //phaser.io/sandbox/gBewUZoP
+ *
+ * This source requires Phaser 2.6.2
  */
-function renderBall(x, y) {
-  ctx.drawImage(
-    ball,
-    2 * BALL_RADIUS + x,
-    dFromBottom(200) + y,
-    BALL_RADIUS,
-    BALL_RADIUS
-  );
-  // ctx.fillStyle = "black";
-  // ctx.beginPath();
-  // ctx.arc(2 * BALL_RADIUS, dFromBottom(200), BALL_RADIUS, 0, Math.PI * 2);
-  // ctx.stroke();
+
+var game = new Phaser.Game(600, 400, Phaser.AUTO, "", {
+  preload: preload,
+  create: create,
+  update: update,
+  render: render
+});
+
+function preload() {
+  game.load.crossOrigin = "anonymous";
+
+  game.load.image("ball", "ball.png");
+  game.load.image("zone", "sprites/platform.png");
 }
 
-/**
- * Erase previous trajectory and draw new one
- * @param {*} f
- */
-function renderTrajectory(f, clear = false) {
-  // if (clear) console.log("clearing");
-  // if (!clear) renderTrajectory(f - 1, true);
-  ctx.strokeStyle = clear ? "white" : "white";
-  init();
-  renderBall(0, 0);
-  ctx.lineWidth = 2;
-  ctx.setLineDash([5, 15]);
-  f **= 1.6;
+var card;
+var dropZone;
+var dragPosition;
+var dragging;
+const [startX, startY] = [150, 200];
+var line;
+var graphics;
+var space;
+var board;
+var text;
 
-  ctx.beginPath();
-  ctx.moveTo(BALL_RADIUS * 2 + 25, dFromBottom(BALL_RADIUS * 4));
-  ctx.quadraticCurveTo(
-    BALL_RADIUS * 2 + 70 + f / 2,
-    dFromBottom(BALL_RADIUS * 4 + 190),
-    BALL_RADIUS * 2 + 70 + f,
-    dFromBottom(BALL_RADIUS + 220)
-  );
-  ctx.stroke();
+function create() {
+  game.stage.backgroundColor = 0xe8e8e8;
+  game.physics.startSystem(Phaser.Physics.ARCADE);
+  card = game.add.sprite(startX, startY, "eye", null /* frame */);
+  board = game.add.sprite(game.world.width - 100, 200, "zone");
+  board.alpha = 0;
+  net1 = game.add.sprite(game.world.width - 100, 125, "zone");
+  net2 = game.add.sprite(game.world.width - 25, 125, "zone");
+
+  game.physics.enable(card, Phaser.Physics.ARCADE);
+  game.physics.enable(board, Phaser.Physics.ARCADE);
+  game.physics.enable(net1, Phaser.Physics.ARCADE);
+  game.physics.enable(net2, Phaser.Physics.ARCADE);
+
+  board.body.immovable = true;
+  board.body.checkCollision.up = true;
+  board.body.checkCollision.left = false;
+  board.body.checkCollision.right = false;
+  board.body.checkCollision.down = false;
+
+  net1.body.immovable = true;
+  net2.body.immovable = true;
+  net1.scale.set(5 / net1.width, 50 / net1.height);
+  net2.scale.set(5 / net2.width, 50 / net2.height);
+
+  card.anchor.setTo(0.5, 0.5);
+  card.scale.set(50 / card.width, 50 / card.height);
+  card.body.collideWorldBounds = true;
+  card.body.bounce.set(0.7);
+  card.body.drag.set(50, 0);
+
+  card.inputEnabled = true;
+  card.input.enableDrag();
+
+  card.events.onInputOver.add(onOver, this);
+  card.events.onInputOut.add(onOut, this);
+  card.events.onDragStart.add(onDragStart, this);
+  card.events.onDragStop.add(onDragStop, this);
+
+  dragPosition = new Phaser.Point(card.x, card.y);
+  draggin = false;
+
+  graphics = game.add.graphics(0, 0);
+
+  space = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
+
+  dragging = false;
+
+  resetGame("Pull back the ball");
 }
 
-/**
- * render initial canvas
- */
-function init() {
-  ctx.fillStyle = "rgb(20,20,20)";
-  ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+function onOver(sprite, pointer) {
+  sprite.tint = 0xff7777;
+}
 
-  ctx.drawImage(
-    hoop,
-    dFromRight(BALL_RADIUS * 2),
-    dFromBottom(200 + BALL_RADIUS),
-    BALL_RADIUS * 1.5,
-    BALL_RADIUS
+function onOut(sprite, pointer) {
+  sprite.tint = 0xffffff;
+}
+
+function onDragStart(sprite, pointer) {
+  if (text) text.destroy();
+  dragging = true;
+  dragPosition.set(sprite.x, sprite.y);
+}
+
+function onDragStop(sprite, pointer) {
+  dragging = false;
+  card.inputEnabled = false;
+
+  sprite.body.gravity.y = 800;
+  sprite.body.velocity.set((startX - sprite.x) * 6, (startY - sprite.y) * 6);
+  sprite.body.angularVelocity = 100;
+}
+
+function update() {
+  graphics.destroy();
+  game.physics.arcade.collide(card, board, () => resetGame("You won 💪🍆💦"));
+  game.physics.arcade.collide(card, net1);
+  game.physics.arcade.collide(card, net2);
+
+  if (dragging) {
+    dragPosition.set(card.x, card.y);
+    graphics = game.add.graphics(0, 0);
+    graphics.lineStyle(3, 0xee6124, 1);
+    graphics.moveTo(startX, startY);
+    graphics.lineTo(card.x, card.y);
+    graphics.endFill();
+  } else if (
+    card.body.gravity.y &&
+    !dragging &&
+    (space.isDown || Math.abs(card.body.velocity.x) < 0.1)
+  ) {
+    resetGame("Loser 😂😂😂😂");
+  }
+  card.body.angularVelocity = card.body.velocity.x;
+}
+
+function resetGame(message = "") {
+  card.body.angularVelocity = 0;
+  card.inputEnabled = true;
+  [card.x, card.y] = [startX, startY];
+  card.body.gravity.y = 0;
+  card.body.velocity.set(0, 0);
+  if (text) text.destroy();
+  text = game.add.text(
+    game.world.width / 2 - 100,
+    game.world.height / 2 - 16,
+    message,
+    { fontSize: "32px", fill: "#0472d5" }
   );
 }
+
+function render() {}
