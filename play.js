@@ -1,16 +1,11 @@
 /**
- * Generated from the Phaser Sandbox
- *
- * //phaser.io/sandbox/gBewUZoP
- *
  * This source requires Phaser 2.6.2
  */
 
 var game = new Phaser.Game(600, 400, Phaser.AUTO, "", {
   preload: preload,
   create: create,
-  update: update,
-  render: render
+  update: update
 });
 
 function preload() {
@@ -19,67 +14,70 @@ function preload() {
   game.load.image("ball", "ball.png");
   game.load.image("hoop", "hoop.png");
   game.load.image("hoopoverlay", "hoopoverlay.png");
-  game.load.image("zone", "platform.png");
+  game.load.image("blank", "platform.png");
 }
 
-var card;
-var dropZone;
+var ball;
 var dragPosition;
 var dragging;
 const [startX, startY] = [150, 200];
 var line;
 var graphics;
 var space;
-var board;
+var hoopHitmark;
 var text;
+var hoopGraphic, hoopOverlay;
+var hoopLeft, hoopRight, hoopHitmark;
 
 function create() {
   game.stage.backgroundColor = 0xe8e8e8;
   game.physics.startSystem(Phaser.Physics.ARCADE);
-  hoop = game.add.sprite(game.world.width - 185, 50, "hoop");
-  card = game.add.sprite(startX, startY, "ball", null /* frame */);
-  hoopoverlay = game.add.sprite(game.world.width - 185, 50, "hoopoverlay");
-  board = game.add.sprite(game.world.width - 150, 250, "zone");
-  board.alpha = 0;
-  net1 = game.add.sprite(game.world.width - 155, 175, "zone");
-  net2 = game.add.sprite(game.world.width - 75, 175, "zone");
-  net1.alpha = 0;
-  net2.alpha = 0;
+  hoopGraphic = game.add.sprite(game.world.width - 185, 50, "hoop");
+  ball = game.add.sprite(startX, startY, "ball", null /* frame */);
+  hoopOverlay = game.add.sprite(game.world.width - 185, 50, "hoopoverlay");
+  hoopHitmark = game.add.sprite(game.world.width - 140, 250, "blank");
+  hoopLeft = game.add.sprite(game.world.width - 155, 175, "blank");
+  hoopRight = game.add.sprite(game.world.width - 70, 175, "blank");
+  hoopLeft.alpha = 0;
+  hoopRight.alpha = 0;
+  hoopHitmark.alpha = 0;
 
-  game.physics.enable(card, Phaser.Physics.ARCADE);
-  game.physics.enable(board, Phaser.Physics.ARCADE);
-  game.physics.enable(net1, Phaser.Physics.ARCADE);
-  game.physics.enable(net2, Phaser.Physics.ARCADE);
+  game.physics.enable(ball, Phaser.Physics.ARCADE);
+  game.physics.enable(hoopHitmark, Phaser.Physics.ARCADE);
+  game.physics.enable(hoopLeft, Phaser.Physics.ARCADE);
+  game.physics.enable(hoopRight, Phaser.Physics.ARCADE);
 
-  board.body.immovable = true;
-  board.body.checkCollision.up = true;
-  board.body.checkCollision.left = false;
-  board.body.checkCollision.right = false;
-  board.body.checkCollision.down = false;
-  board.scale.set(80 / board.width, 5 / board.width);
+  hoopHitmark.body.immovable = true;
+  hoopHitmark.body.checkCollision.up = true;
+  hoopHitmark.body.checkCollision.left = false;
+  hoopHitmark.body.checkCollision.right = false;
+  hoopHitmark.body.checkCollision.down = false;
+  hoopHitmark.scale.set(50 / hoopHitmark.width, 1 / hoopHitmark.width);
 
-  net1.body.immovable = true;
-  net2.body.immovable = true;
-  net1.scale.set(1 / net1.width, 50 / net1.height);
-  net2.scale.set(1 / net2.width, 50 / net2.height);
-  hoop.scale.set(200 / hoop.width, 200 / hoop.height);
-  hoopoverlay.scale.set(200 / hoopoverlay.width, 200 / hoopoverlay.height);
+  hoopLeft.body.immovable = true;
+  hoopRight.body.immovable = true;
+  hoopLeft.scale.set(1 / hoopLeft.width, 60 / hoopLeft.height);
+  hoopLeft.angle = -10;
+  hoopRight.scale.set(1 / hoopRight.width, 60 / hoopRight.height);
+  hoopRight.angle = 10;
+  hoopGraphic.scale.set(200 / hoopGraphic.width, 200 / hoopGraphic.height);
+  hoopOverlay.scale.set(200 / hoopOverlay.width, 200 / hoopOverlay.height);
 
-  card.anchor.setTo(0.5, 0.5);
-  card.scale.set(50 / card.width, 50 / card.height);
-  card.body.collideWorldBounds = true;
-  card.body.bounce.set(0.7);
-  card.body.drag.set(50, 0);
+  ball.anchor.setTo(0.5, 0.5);
+  ball.scale.set(50 / ball.width, 50 / ball.height);
+  ball.body.collideWorldBounds = true;
+  ball.body.bounce.set(0.7);
+  ball.body.drag.set(50, 0);
 
-  card.inputEnabled = true;
-  card.input.enableDrag();
+  ball.inputEnabled = true;
+  ball.input.enableDrag();
 
-  card.events.onInputOver.add(onOver, this);
-  card.events.onInputOut.add(onOut, this);
-  card.events.onDragStart.add(onDragStart, this);
-  card.events.onDragStop.add(onDragStop, this);
+  ball.events.onInputOver.add(onOver, this);
+  ball.events.onInputOut.add(onOut, this);
+  ball.events.onDragStart.add(onDragStart, this);
+  ball.events.onDragStop.add(onDragStop, this);
 
-  dragPosition = new Phaser.Point(card.x, card.y);
+  dragPosition = new Phaser.Point(ball.x, ball.y);
   draggin = false;
 
   graphics = game.add.graphics(0, 0);
@@ -107,7 +105,7 @@ function onDragStart(sprite, pointer) {
 
 function onDragStop(sprite, pointer) {
   dragging = false;
-  card.inputEnabled = false;
+  ball.inputEnabled = false;
 
   sprite.body.gravity.y = 800;
   sprite.body.velocity.set((startX - sprite.x) * 6, (startY - sprite.y) * 6);
@@ -116,40 +114,40 @@ function onDragStop(sprite, pointer) {
 
 function update() {
   graphics.destroy();
-  game.physics.arcade.collide(card, board, () => resetGame("You won 💪🍆💦"));
-  game.physics.arcade.collide(card, net1);
-  game.physics.arcade.collide(card, net2);
+  game.physics.arcade.collide(ball, hoopHitmark, () => {
+    if (!dragging) resetGame("You won 💪🍆💦");
+  });
+  game.physics.arcade.collide(ball, hoopLeft);
+  game.physics.arcade.collide(ball, hoopRight);
 
   if (dragging) {
-    dragPosition.set(card.x, card.y);
+    dragPosition.set(ball.x, ball.y);
     graphics = game.add.graphics(0, 0);
     graphics.lineStyle(3, 0xee6124, 1);
     graphics.moveTo(startX, startY);
-    graphics.lineTo(card.x, card.y);
+    graphics.lineTo(ball.x, ball.y);
     graphics.endFill();
   } else if (
-    card.body.gravity.y &&
+    ball.body.gravity.y &&
     !dragging &&
-    (space.isDown || Math.abs(card.body.velocity.x) < 0.1)
+    (space.isDown || Math.abs(ball.body.velocity.x) < 0.1)
   ) {
     resetGame("Loser 😂😂😂😂");
   }
-  card.body.angularVelocity = card.body.velocity.x;
+  ball.body.angularVelocity = ball.body.velocity.x;
 }
 
 function resetGame(message = "") {
-  card.body.angularVelocity = 0;
-  card.inputEnabled = true;
-  [card.x, card.y] = [startX, startY];
-  card.body.gravity.y = 0;
-  card.body.velocity.set(0, 0);
+  ball.body.angularVelocity = 0;
+  ball.inputEnabled = true;
+  [ball.x, ball.y] = [startX, startY];
+  ball.body.gravity.y = 0;
+  ball.body.velocity.set(0, 0);
   if (text) text.destroy();
   text = game.add.text(
     game.world.width / 2 - 125,
-    game.world.height - 50,
+    game.world.height - 100,
     message,
     { fontSize: "32px", fill: "#0472d5" }
   );
 }
-
-function render() {}
