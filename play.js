@@ -14,9 +14,11 @@ var game = new Phaser.Game(600, 400, Phaser.AUTO, "", {
 });
 
 function preload() {
-  game.load.baseUrl = "arry.xyz/bball-demo/";
+  game.load.baseUrl = "./";
   game.load.crossOrigin = "anonymous";
   game.load.image("ball", "ball.png");
+  game.load.image("hoop", "hoop.png");
+  game.load.image("hoopoverlay", "hoopoverlay.png");
   game.load.image("zone", "platform.png");
 }
 
@@ -34,11 +36,15 @@ var text;
 function create() {
   game.stage.backgroundColor = 0xe8e8e8;
   game.physics.startSystem(Phaser.Physics.ARCADE);
+  hoop = game.add.sprite(game.world.width - 185, 50, "hoop");
   card = game.add.sprite(startX, startY, "ball", null /* frame */);
-  board = game.add.sprite(game.world.width - 100, 200, "zone");
+  hoopoverlay = game.add.sprite(game.world.width - 185, 50, "hoopoverlay");
+  board = game.add.sprite(game.world.width - 150, 250, "zone");
   board.alpha = 0;
-  net1 = game.add.sprite(game.world.width - 100, 125, "zone");
-  net2 = game.add.sprite(game.world.width - 25, 125, "zone");
+  net1 = game.add.sprite(game.world.width - 155, 175, "zone");
+  net2 = game.add.sprite(game.world.width - 75, 175, "zone");
+  net1.alpha = 0;
+  net2.alpha = 0;
 
   game.physics.enable(card, Phaser.Physics.ARCADE);
   game.physics.enable(board, Phaser.Physics.ARCADE);
@@ -50,11 +56,14 @@ function create() {
   board.body.checkCollision.left = false;
   board.body.checkCollision.right = false;
   board.body.checkCollision.down = false;
+  board.scale.set(80 / board.width, 5 / board.width);
 
   net1.body.immovable = true;
   net2.body.immovable = true;
   net1.scale.set(5 / net1.width, 50 / net1.height);
   net2.scale.set(5 / net2.width, 50 / net2.height);
+  hoop.scale.set(200 / hoop.width, 200 / hoop.height);
+  hoopoverlay.scale.set(200 / hoopoverlay.width, 200 / hoopoverlay.height);
 
   card.anchor.setTo(0.5, 0.5);
   card.scale.set(50 / card.width, 50 / card.height);
@@ -136,8 +145,8 @@ function resetGame(message = "") {
   card.body.velocity.set(0, 0);
   if (text) text.destroy();
   text = game.add.text(
-    game.world.width / 2 - 100,
-    game.world.height / 2 - 16,
+    game.world.width / 2 - 125,
+    game.world.height - 50,
     message,
     { fontSize: "32px", fill: "#0472d5" }
   );
