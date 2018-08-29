@@ -60,8 +60,8 @@ function create() {
 
   net1.body.immovable = true;
   net2.body.immovable = true;
-  net1.scale.set(5 / net1.width, 50 / net1.height);
-  net2.scale.set(5 / net2.width, 50 / net2.height);
+  net1.scale.set(1 / net1.width, 50 / net1.height);
+  net2.scale.set(1 / net2.width, 50 / net2.height);
   hoop.scale.set(200 / hoop.width, 200 / hoop.height);
   hoopoverlay.scale.set(200 / hoopoverlay.width, 200 / hoopoverlay.height);
 
