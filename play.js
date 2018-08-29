@@ -14,7 +14,7 @@ var game = new Phaser.Game(600, 400, Phaser.AUTO, "", {
 });
 
 function preload() {
-  game.load.baseUrl = "arry.xyz/bball-demo";
+  game.load.baseUrl = "arry.xyz/bball-demo/";
   game.load.crossOrigin = "anonymous";
   game.load.image("ball", "ball.png");
   game.load.image("zone", "sprites/platform.png");
