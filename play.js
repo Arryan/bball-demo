@@ -34,7 +34,7 @@ var text;
 function create() {
   game.stage.backgroundColor = 0xe8e8e8;
   game.physics.startSystem(Phaser.Physics.ARCADE);
-  card = game.add.sprite(startX, startY, "eye", null /* frame */);
+  card = game.add.sprite(startX, startY, "ball", null /* frame */);
   board = game.add.sprite(game.world.width - 100, 200, "zone");
   board.alpha = 0;
   net1 = game.add.sprite(game.world.width - 100, 125, "zone");
